@@ -170,3 +170,83 @@ Data3$age
 
 age <- table(Data3$age)
 age
+
+#-------------------Data Visualization-------------------------------
+
+# Importing the plot library
+library(ggplot2)
+
+# Set up factors.
+Data3$damage_grade <- as.factor(Data3$damage_grade) #CONVERT TO FACTORS
+Data3$land_surface_condition <- as.factor(Data3$land_surface_condition) #CONVERT TO FACTORS
+ggplot(Data3, aes(x = damage_grade)) + geom_bar()
+
+#Individual performance of damage_grade which is categorical column
+graph1 <- ggplot(Data3, aes(x = damage_grade))
+graph1 + geom_bar(fill = "blue") + geom_text(stat = 'count', aes(label = ..count..))
+
+#For Continuous column age
+graph2 <- ggplot(Data3, aes(x = age))
+graph2 + geom_dotplot(dotsize = 0.5)
+
+#for continuous area percentage
+graph3 <- ggplot(Data3, aes(x = area_percentage))
+graph3 + geom_dotplot(dotsize = 0.5)
+png(file = "areaplot")
+dev.off()
+
+# Identification of the the Disribution of each attribute
+graph4<-ggplot(Data3,aes(x=damage_grade))
+graph4 + geom_qq(mapping=NULL,data=Data3,geom="point",position="identity",na.rm=TRUE,distribution=stats::qnorm,dparams =TRUE,show.legend=NA,inherit.aes=TRUE)
+png = (file="damage_grade_qqplot")
+dev.off()
+
+# For categorical column Lan_surface_condition
+graph4 <- ggplot(Data3, aes(x = land_surface_condition))
+graph4 + geom_density(fill = "#FFBCDE")
+png(file = "land disribution plot")
+dev.off()
+
+# Relation between two attributes
+# For 2 Continous Columns Age and Area Percentage
+graph5 <- ggplot(Data3, aes(x = age, y = area_percentage))
+graph5 + geom_point(size = 1, shape = 22, color = "blue")
+png(file = "scatter plot1")
+dev.off()
+
+# violin plot
+# age and damage grade
+graph6 <- ggplot(Data3, aes(x = age, y = damage_grade))
+graph6 + geom_violin(color = "green", fill = "pink")
+png(file = "violin plot1")
+dev.off()
+
+# violin plot
+# area and damage grade
+graph8 <- ggplot(Data3, aes(x = area_percentage, y = damage_grade))
+graph8 + geom_violin(color = "green", fill = "pink")
+png(file = "violin plot 2")
+dev.off()
+
+# violin plot
+# height and damage grade
+graph9 <- ggplot(Data3, aes(x = height_percentage, y = damage_grade))
+graph9 + geom_violin(color = "green", fill = "yellow")
+png(file = "violin plot3")
+dev.off()
+
+
+# Jitterplot
+# for land suraface condition and damage grade
+graph10 <- ggplot(Data3, aes(x = land_surface_condition, y = damage_grade)) + geom_jitter(position = position_jitter(0.2))
+graph10
+png(file = "jitterplot")
+dev.off()
+
+#jitterplot
+# for land suraface condition and damage grade
+u <- ggplot(Data3, aes(x = land_surface_condition, y = damage_grade)) + geom_jitter(position = position_jitter(0.2))
+u
+png(file = "jitterplot")
+dev.off()
+n
