@@ -250,3 +250,129 @@ u
 png(file = "jitterplot")
 dev.off()
 n
+
+#-------------------- Applying ML Algorithms -----------------
+#------------------- Decision Trees -------------------------------------------
+# Importing libraries for the ML Algorithms
+library(caTools)
+library(caret)
+library(party)
+library(randomForest)
+library(e1071)
+
+# Cleaning and setting data
+Data3$damage <- factor(Data3$damage_grade)
+Data3$damage <- Data3$damage_grade1
+
+# Partitioning Data into training and Testing
+set.seed(1234)
+pd <- sample(2, nrow(Data3), replace = TRUE, prob = c(0.8, 0.2))
+train <- Data3[pd == 1, ]
+validate <- Data3[pd == 2, ]
+library(party)
+
+# Creating a tree based on the data
+tree <- ctree(
+  damage_grade ~ age +
+    area_percentage +
+    height_percentage +
+    count_floors_pre_eq +
+    has_superstructure_adobe_mud + has_superstructure_mud_mortar_stone +
+    has_superstructure_stone_flag +
+    has_superstructure_cement_mortar_stone +
+    has_superstructure_mud_mortar_brick +
+    has_superstructure_cement_mortar_brick +
+    has_superstructure_timber +
+    has_superstructure_bamboo +
+    has_superstructure_rc_non_engineered +
+    has_superstructure_rc_engineered +
+    has_superstructure_other +
+    count_families +
+    has_secondary_use +
+    has_secondary_use_agriculture +
+    has_secondary_use_hotel +
+    has_secondary_use_rental +
+    has_secondary_use_institution +
+    has_secondary_use_school +
+    has_secondary_use_industry +
+    has_secondary_use_health_post +
+    has_secondary_use_gov_office +
+    has_secondary_use_use_police +
+    has_secondary_use_other,
+  data = train,
+  controls = ctree_control(mincriterion = 0.9, minsplit = 20000)
+)
+tree
+
+plot(tree)
+predict(tree, validate)
+
+tab <- table(predict(tree), train$damage)
+print(tab)
+
+accuracy <- 1 - sum(diag(tab)) / sum(tab)
+print(accuracy * 10)
+
+# ------------------- Validate set---------------------
+# Testing predictions and providing the accuracy report
+testPred <- predict(tree, newdata = validate)
+tab1 <- table(testPred, validate$damage)
+print(tab1)
+
+accuracy1 <- 1 - (sum(diag(tab)) / sum(tab))
+print('Accuracy:')
+print(accuracy1 * 100)
+
+length(testPred)
+testPred <- as.numeric(testPred)
+building_id = testPred[1:45965]
+building_id
+
+submit1 = data.frame(building_id, testPred)
+write.csv(submit1, "submit1.csv", row.names = FALSE)
+data2 <- read.csv("submit1.csv")
+data2
+
+data2$testPred <-
+  cut(data2$testPred,
+      seq(0, 3, 1),
+      right = FALSE,
+      labels = c(1:3))
+data2$testPred
+graph1 <- ggplot(data2, aes(x = testPred))
+graph1 + geom_bar(fill = "blue") + geom_text(stat = 'count', aes(label = ..count..))
+
+# --------------------------- Naive Bayes -------------------------------------
+library(e1071)
+library(caTools)
+library(caret)
+
+split <- sample.split(Data3, SplitRatio = 0.7)
+train_cl <- subset(Data3, split == "TRUE")
+test_cl <- subset(Data3, split == "FALSE")
+set.seed(1234)  # Setting Seed
+classifier_cl <- naiveBayes(damage_grade ~ ., data = train_cl)
+classifier_cl
+y_pred <- predict(classifier_cl, newdata = test_cl)
+y_pred
+
+# ------------------------ Finding Accuracy -------------------------------------
+tab1 <- table(y_pred, test_cl$damage_grade)
+print(tab1)
+
+accuracy1 <- 1 - (sum(diag(tab1)) / sum(tab1))
+print('Accuracy:')
+print(accuracy1 * 100)
+
+length(y_pred)
+building_id = testPred[1:69186]
+building_id
+
+submit = data.frame(building_id, y_pred)
+
+write.csv(submit, "submit2.csv", row.names = FALSE)
+data3 <- read.csv("submit2.csv")
+
+data3
+graph1 <- ggplot(data3, aes(x = y_pred))
+graph1 + geom_bar(fill = "blue") + geom_text(stat = 'count', aes(label = ..count..))
